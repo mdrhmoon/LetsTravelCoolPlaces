@@ -43,6 +43,31 @@ public class TemperatureService
         return allDistrictsTemperature;
     }
 
+    // getting coolest 10 districts
+    public async Task<List<District>> GetCoolestDistricts(List<TemperatureDistrict> temperatureDistricts)
+    {
+        // generating average temperature for all district
+        var avgTemperatureOfDistricts = temperatureDistricts.GroupBy(x => new {
+            Latitude = x.Latitude,
+            Longitutde = x.Longitude
+        }).Select(g => new {
+            Latitude = g.Key.Latitude,
+            Longitude = g.Key.Longitutde,
+            AvgTemperature = g.Average(x => x.Temperature)
+        });
+
+        // taking coolest 10 district
+        var coolestDistrictsTemperature = avgTemperatureOfDistricts.OrderBy(x => x.AvgTemperature).Take(10);
+
+        // filtering coolest district from all district
+        var districts = await _districtService.GetDistrictsFromApi();
+        var coolestDistrict = districts!.Where(x =>
+            coolestDistrictsTemperature.Select(x => x.Longitude).Contains(x.Lat) &&
+                coolestDistrictsTemperature.Select(x => x.Longitude).Contains(x.Long)).ToList();
+
+        return coolestDistrict;
+    }
+
     private List<TemperatureDistrict> ConvertTemperatureToTemperatureDistrict(Temperature temperature)
     {
         // taking indexes of all 2pm temperatures for all date.
