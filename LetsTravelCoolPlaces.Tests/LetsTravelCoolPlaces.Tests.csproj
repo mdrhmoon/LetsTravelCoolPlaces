@@ -28,4 +28,9 @@
     <ProjectReference Include="..\LetsTravelCoolPlaces.Services\LetsTravelCoolPlaces.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Utility\" />
+    <Folder Include="Service\" />
+  </ItemGroup>
+
 </Project>
