@@ -14,6 +14,6 @@ public class DistrictService : IDistrictService
         string url = Urls.GetDistrictUrl();
         var districtsModel = await _httpService.GetAsync(url);
 
-        return districtsModel!.Districts;
+        return districtsModel!.Districts.ToList();
     }
 }

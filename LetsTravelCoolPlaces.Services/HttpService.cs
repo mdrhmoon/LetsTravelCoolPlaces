@@ -1,8 +1,4 @@
-﻿using Newtonsoft.Json;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-
-namespace LetsTravelCoolPlaces.Services;
+﻿namespace LetsTravelCoolPlaces.Services;
 
 public class HttpService<T> : IHttpService<T> where T : class
 {

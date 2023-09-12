@@ -10,6 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddTransient<IDistrictService, DistrictService>();
+builder.Services.AddTransient<ITemperatureService, TemperatureService>();
 
 var app = builder.Build();
 
