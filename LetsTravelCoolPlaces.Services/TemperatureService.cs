@@ -18,6 +18,31 @@ public class TemperatureService
         return ConvertTemperatureToTemperatureDistrict(temperature);
     }
 
+    // Getting all district temperature
+    public async Task<List<TemperatureDistrict>> GetTemperatureForAllDistrict(string startDate, string endDate)
+    {
+        var districts = await _districtService.GetDistrictsFromApi();
+        var allTasks = new List<Task<List<TemperatureDistrict>>>();
+
+        // Generating all url and task for all district
+        foreach (var district in districts!)
+        {
+            string url = Urls.GetTemperatureUrl(Convert.ToDouble(district.Lat), Convert.ToDouble(district.Long), startDate, endDate);
+            allTasks.Add(GetTemperatureFromApi(url));
+        }
+
+        var allDistrictsTemperatureArray = await Task.WhenAll(allTasks);
+
+        // Converting List<TemperatureDistrict> array to List<TemperatureDistrict>
+        var allDistrictsTemperature = new List<TemperatureDistrict>();
+        foreach (var temperature in allDistrictsTemperatureArray)
+        {
+            allDistrictsTemperature.AddRange(temperature);
+        }
+
+        return allDistrictsTemperature;
+    }
+
     private List<TemperatureDistrict> ConvertTemperatureToTemperatureDistrict(Temperature temperature)
     {
         // taking indexes of all 2pm temperatures for all date.
