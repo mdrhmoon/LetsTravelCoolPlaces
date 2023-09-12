@@ -8,8 +8,8 @@ public class HttpService<T> : IHttpService<T> where T : class
 {
     public async Task<T?> GetAsync(string url)
     {
-        var client = GetClient();
-        var response = await client.GetAsync(url);
+        var client = GetClient(url);
+        var response = await client.GetAsync("");
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadAsStringAsync();
@@ -23,8 +23,8 @@ public class HttpService<T> : IHttpService<T> where T : class
 
     public async Task<T?> PostAsync(string url, T data)
     {
-        var client = GetClient();
-        var response = await client.PostAsJsonAsync(url, data);
+        var client = GetClient(url);
+        var response = await client.PostAsJsonAsync("", data);
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadAsStringAsync();
@@ -36,10 +36,10 @@ public class HttpService<T> : IHttpService<T> where T : class
         }
     }
 
-    private HttpClient GetClient()
+    private HttpClient GetClient(string url)
     {
         var client = new HttpClient();
-        client.BaseAddress = new Uri("");
+        client.BaseAddress = new Uri(url);
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         return client;

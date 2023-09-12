@@ -2,18 +2,18 @@
 
 public class DistrictService : IDistrictService
 {
-    private readonly IHttpService<List<District>> _httpService;
+    private readonly IHttpService<DistrictListModel> _httpService;
 
     public DistrictService()
     {
-        _httpService = new HttpService<List<District>>();
+        _httpService = new HttpService<DistrictListModel>();
     }
 
-    public async Task<List<District>?> GetDistrictsFromApi()
+    public async Task<List<District>> GetDistrictsFromApi()
     {
         string url = Urls.GetDistrictUrl();
-        var districts = await _httpService.GetAsync(url);
+        var districtsModel = await _httpService.GetAsync(url);
 
-        return districts;
+        return districtsModel!.Districts;
     }
 }
