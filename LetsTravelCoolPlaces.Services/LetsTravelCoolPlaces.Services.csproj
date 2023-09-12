@@ -6,4 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LetsTravelCoolPlaces.Core\LetsTravelCoolPlaces.Core.csproj" />
+    <ProjectReference Include="..\LetsTravelCoolPlaces.Utility\LetsTravelCoolPlaces.Utility.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
+
 </Project>

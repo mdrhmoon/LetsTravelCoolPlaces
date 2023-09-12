@@ -22,4 +22,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LetsTravelCoolPlaces.API\LetsTravelCoolPlaces.API.csproj" />
+    <ProjectReference Include="..\LetsTravelCoolPlaces.Core\LetsTravelCoolPlaces.Core.csproj" />
+    <ProjectReference Include="..\LetsTravelCoolPlaces.Services\LetsTravelCoolPlaces.Services.csproj" />
+  </ItemGroup>
+
 </Project>
