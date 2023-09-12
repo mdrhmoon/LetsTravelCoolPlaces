@@ -11,7 +11,7 @@ public class DistrictService : IDistrictService
 
     public async Task<List<District>?> GetDistrictsFromApi()
     {
-        string url = "";
+        string url = Urls.GetDistrictUrl();
         var districts = await _httpService.GetAsync(url);
 
         return districts;
