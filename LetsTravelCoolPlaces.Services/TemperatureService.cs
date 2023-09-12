@@ -102,7 +102,7 @@ public class TemperatureService : ITemperatureService
     {
         // taking indexes of all 2pm temperatures for all date.
         var indexes = temperature.Hourly.Time.Select((x, i) => new {x, i}).Where(x => Convert.ToDateTime(x.x).Hour == 14).ToList();
-        List<TemperatureDistrict> temperatureDistricts = new List<TemperatureDistrict>();
+        var temperatureDistricts = new List<TemperatureDistrict>();
 
         foreach (var index in indexes)
         {

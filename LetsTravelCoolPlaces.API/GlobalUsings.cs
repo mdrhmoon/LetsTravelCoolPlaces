@@ -1,2 +1,2 @@
-﻿global using Microsoft.AspNetCore.Mvc;
-global using LetsTravelCoolPlaces.Services;
+﻿global using LetsTravelCoolPlaces.Services;
+global using Microsoft.AspNetCore.Mvc;
