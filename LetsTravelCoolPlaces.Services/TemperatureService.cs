@@ -45,6 +45,9 @@ public class TemperatureService : ITemperatureService
     // Checking travel possibility of destination district
     public async Task<string> GetTravelPossibility(string currentDistrictId, string destinationDistrictId, string date)
     {
+        DateTime startDate = DateTime.Now, endDate = DateTime.Now.AddDays(6), currentDate = Convert.ToDateTime(date);
+        if (currentDate < startDate && currentDate > endDate) throw new Exception($"Invalid date. Date must be between {startDate.ToString("yyyy-MM-dd")} and {endDate.ToString("yyyy-MM-dd")}");
+
         var currentDistrict = await _districtService.GetDistrictById(currentDistrictId);
         var destinationDistrict = await _districtService.GetDistrictById(destinationDistrictId);
 
