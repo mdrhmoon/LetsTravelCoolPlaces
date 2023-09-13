@@ -6,10 +6,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddTransient<IDistrictService, DistrictService>();
 builder.Services.AddTransient<ITemperatureService, TemperatureService>();
-
 // SERILOG
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
