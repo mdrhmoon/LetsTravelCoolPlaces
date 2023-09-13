@@ -4,27 +4,71 @@ public class TemperatureService : ITemperatureService
 {
     private readonly IHttpService<Temperature> _httpService;
     private readonly IDistrictService _districtService;
+    private readonly IDistributedCache _distributedCache;
 
-    public TemperatureService(IDistrictService districtService)
+    public TemperatureService(IDistrictService DistrictService, IDistributedCache DistributedCache)
     {
         _httpService = new HttpService<Temperature>();
-        _districtService = districtService;
+        _districtService = DistrictService;
+        _distributedCache = DistributedCache;
+    }
+
+    // getting coolest 10 districts
+    public async Task<List<District>> GetCoolestDistricts()
+    {
+        var temperatureDistricts = await GetTemperatureForAllDistrict();
+
+        // generating average temperature for all district
+        var avgTemperatureOfDistricts = temperatureDistricts.GroupBy(x => new
+        {
+            Latitude = x.Latitude,
+            Longitutde = x.Longitude
+        }).Select(g => new
+        {
+            Latitude = g.Key.Latitude,
+            Longitude = g.Key.Longitutde,
+            AvgTemperature = g.Average(x => x.Temperature)
+        }).ToList();
+
+        var districts = await _districtService.GetDistricts();
+        // taking coolest 10 district
+        var coolestDistrictsTemperature = avgTemperatureOfDistricts.OrderBy(x => x.AvgTemperature).Take(10).ToList();
+
+        // filtering coolest district from all district
+        var coolestDistrict = districts!.Where(x =>
+            coolestDistrictsTemperature.Select(y => y.Latitude).Contains(x.Lat) &&
+                coolestDistrictsTemperature.Select(z => z.Longitude).Contains(x.Long)).ToList();
+
+        return coolestDistrict;
+    }
+
+    // Checking travel possibility of destination district
+    public async Task<string> GetTravelPossibility(string currentDistrictId, string destinationDistrictId, string date)
+    {
+        var currentDistrict = await _districtService.GetDistrictById(currentDistrictId);
+        var destinationDistrict = await _districtService.GetDistrictById(destinationDistrictId);
+
+        // Get District Temperature for that day
+        var currentDistrictTemperature = await GetTemperatureDistrictByLatitudeLongitudeAndDate(currentDistrict!.Lat, currentDistrict.Long, date);
+        var destinationDistrictTemperature = await GetTemperatureDistrictByLatitudeLongitudeAndDate(destinationDistrict!.Lat, destinationDistrict.Long, date);
+
+        return currentDistrictTemperature!.Temperature > destinationDistrictTemperature!.Temperature ? "Can travel" : "Can't travel";
     }
 
     // fetching temperature with district date between
-    public async Task<List<TemperatureDistrict>> GetTemperatureFromApi(string url, string latitude, string longitude)
+    private async Task<List<TemperatureDistrict>> GetTemperatureFromApi(string url, string latitude, string longitude)
     {
         var temperature = await _httpService.GetAsync(url);
         return ConvertTemperatureToTemperatureDistrict(temperature, latitude, longitude);
     }
 
     // Getting all district temperature
-    public async Task<List<TemperatureDistrict>> GetTemperatureForAllDistrict()
+    private async Task<List<TemperatureDistrict>> GetTemperatureForAllDistrictFromApi()
     {
         var allTasks = new List<Task<List<TemperatureDistrict>>>();
         string startDate = DateTime.Now.ToString("yyyy-MM-dd");
         string endDate = DateTime.Now.AddDays(6).ToString("yyyy-MM-dd");
-        var districts = await _districtService.GetDistrictsFromApi();
+        var districts = await _districtService.GetDistricts();
 
         // Generating all url and task for all district
         foreach (var district in districts)
@@ -45,57 +89,23 @@ public class TemperatureService : ITemperatureService
         return allDistrictsTemperature;
     }
 
-    // getting coolest 10 districts
-    public async Task<List<District>> GetCoolestDistricts()
+    private async Task<List<TemperatureDistrict>> GetTemperatureForAllDistrict()
     {
-        var temperatureDistricts = await GetTemperatureForAllDistrict();
-
-        // generating average temperature for all district
-        var avgTemperatureOfDistricts = temperatureDistricts.GroupBy(x => new
+        List<TemperatureDistrict>? temperatureDistricts = await _distributedCache.GetAsync<List<TemperatureDistrict>>(Cachekeys.TEMPERATURE);
+        if(temperatureDistricts is null)
         {
-            Latitude = x.Latitude,
-            Longitutde = x.Longitude
-        }).Select(g => new
-        {
-            Latitude = g.Key.Latitude,
-            Longitude = g.Key.Longitutde,
-            AvgTemperature = g.Average(x => x.Temperature)
-        }).ToList();
+            temperatureDistricts = await GetTemperatureForAllDistrictFromApi();
+            if (temperatureDistricts is null) throw new Exception("No temperature found for districts.");
+            await _distributedCache.SetAsync(Cachekeys.TEMPERATURE, temperatureDistricts);
+        }
 
-        var districts = await _districtService.GetDistrictsFromApi();
-        // taking coolest 10 district
-        var coolestDistrictsTemperature = avgTemperatureOfDistricts.OrderBy(x => x.AvgTemperature).Take(10).ToList();
-
-        // filtering coolest district from all district
-        var coolestDistrict = districts!.Where(x =>
-            coolestDistrictsTemperature.Select(y => y.Latitude).Contains(x.Lat) &&
-                coolestDistrictsTemperature.Select(z => z.Longitude).Contains(x.Long)).ToList();
-
-        return coolestDistrict;
+        return temperatureDistricts;
     }
 
-    // Checking travel possibility of destination district
-    public async Task<string> GetTravelPossibility(string currentDistrictId, string destinationDistrictId, string date)
+    private async Task<TemperatureDistrict?> GetTemperatureDistrictByLatitudeLongitudeAndDate(string latitude, string longitude, string date)
     {
-        var districts = await _districtService.GetDistrictsFromApi();
         var temperatureDistricts = await GetTemperatureForAllDistrict();
-
-        var currentDistrict = districts!.Where(x => x.Id == currentDistrictId).FirstOrDefault();
-        var destinationDistrict = districts!.Where(x => x.Id == destinationDistrictId).FirstOrDefault();
-
-        // filtering current district temperature for the date
-        var currentDistrictTemperature = temperatureDistricts.Where(x =>
-            x.Latitude == currentDistrict!.Lat &&
-            x.Longitude == currentDistrict.Long &&
-            x.Day.ToString("yyyy-MM-dd") == date).FirstOrDefault();
-
-        // filtering destination district temperature for the date
-        var destinationDistrictTemperature = temperatureDistricts.Where(x =>
-            x.Latitude == destinationDistrict!.Lat &&
-            x.Longitude == destinationDistrict.Long &&
-            x.Day.ToString("yyyy-MM-dd") == date).FirstOrDefault();
-
-        return currentDistrictTemperature!.Temperature > destinationDistrictTemperature!.Temperature ? "Can travel" : "Can't travel";
+        return temperatureDistricts.Where(x => x.Latitude == latitude && x.Longitude == longitude && x.Day.ToString("yyyy-MM-dd") == date).FirstOrDefault();
     }
 
     private List<TemperatureDistrict> ConvertTemperatureToTemperatureDistrict(Temperature temperature, string latitude, string longitude)

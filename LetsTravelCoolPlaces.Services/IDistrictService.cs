@@ -1,7 +1,7 @@
-﻿namespace LetsTravelCoolPlaces.Services
+﻿namespace LetsTravelCoolPlaces.Services;
+
+public interface IDistrictService
 {
-    public interface IDistrictService
-    {
-        Task<List<District>?> GetDistrictsFromApi();
-    }
+    Task<List<District>?> GetDistricts();
+    Task<District?> GetDistrictById(string districtId);
 }
