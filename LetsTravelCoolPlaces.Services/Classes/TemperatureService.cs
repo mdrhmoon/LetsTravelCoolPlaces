@@ -13,12 +13,26 @@ public class TemperatureService : ITemperatureService
         _distributedCache = DistributedCache;
     }
 
-    // getting coolest 10 districts
     public async Task<List<District>> GetCoolestDistricts()
     {
-        var temperatureDistricts = await GetTemperatureForAllDistrict();
+        List<District>? coolestDistricts = await _distributedCache.GetAsync<List<District>>(Cachekeys.COOLESTDISTRICTS);
+        if(coolestDistricts is null)
+        {
+            coolestDistricts = await GenerateCoolestDistricts();
+            if (coolestDistricts is null) throw new Exception("Failed to generate coolest districts.");
+            await _distributedCache.SetAsync(Cachekeys.COOLESTDISTRICTS, coolestDistricts);
+        }
 
-        // generating average temperature for all district
+        return coolestDistricts;
+    }
+
+    // getting coolest 10 districts
+    private async Task<List<District>> GenerateCoolestDistricts()
+    {
+        var temperatureDistricts = await GetTemperatureForAllDistrict();
+        if (temperatureDistricts is null) throw new Exception("Temperature for all district not found.");
+
+        // Generating average temperature for all district
         var avgTemperatureOfDistricts = temperatureDistricts.GroupBy(x => new
         {
             x.Latitude,
@@ -31,6 +45,8 @@ public class TemperatureService : ITemperatureService
         }).ToList();
 
         var districts = await _districtService.GetDistricts();
+        if (districts is null) throw new Exception("Districts not found.");
+
         // taking coolest 10 district
         var coolestDistrictsTemperature = avgTemperatureOfDistricts.OrderBy(x => x.AvgTemperature).Take(10).ToList();
 
@@ -46,14 +62,24 @@ public class TemperatureService : ITemperatureService
     public async Task<string> GetTravelPossibility(string currentDistrictId, string destinationDistrictId, string date)
     {
         DateTime startDate = DateTime.Now.AddDays(-1), endDate = DateTime.Now.AddDays(6), currentDate = Convert.ToDateTime(date);
-        if (currentDate <= startDate || currentDate > endDate) throw new Exception($"Invalid date. Date must be between {DateTime.Now.ToString("yyyy-MM-dd")} and {endDate.ToString("yyyy-MM-dd")}");
+        if (currentDate <= startDate || currentDate > endDate) throw new Exception(ExceptionMessages.InvalidDateMessage(DateTime.Now, endDate));
 
+        // Getting current location
         var currentDistrict = await _districtService.GetDistrictById(currentDistrictId);
-        var destinationDistrict = await _districtService.GetDistrictById(destinationDistrictId);
+        if (currentDistrict is null) throw new Exception("Current Location not Found.");
 
-        // Get District Temperature for that day
+        // Getting destination location
+        var coolestDistricts = await GetCoolestDistricts();
+        var destinationDistrict = coolestDistricts.Where(x => x.Id == destinationDistrictId).FirstOrDefault();
+        if (destinationDistrict is null) throw new Exception("Destination Location not Found.");
+
+        // Getting current district temperature for that day
         var currentDistrictTemperature = await GetTemperatureDistrictByLatitudeLongitudeAndDate(currentDistrict!.Lat, currentDistrict.Long, date);
+        if (currentDistrictTemperature is null) throw new Exception("Current location temperature not found.");
+
+        // Getting destination location temperature for that day
         var destinationDistrictTemperature = await GetTemperatureDistrictByLatitudeLongitudeAndDate(destinationDistrict!.Lat, destinationDistrict.Long, date);
+        if (destinationDistrictTemperature is null) throw new Exception("Destination location temperature not found.");
 
         return currentDistrictTemperature!.Temperature > destinationDistrictTemperature!.Temperature ? "Can travel" : "Can't travel";
     }
