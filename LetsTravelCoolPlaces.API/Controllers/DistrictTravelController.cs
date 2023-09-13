@@ -2,7 +2,7 @@
 
 [Route("api/district/travel")]
 [ApiController]
-public class DistrictTravelController : ControllerBase
+public class DistrictTravelController : BaseController
 {
     private readonly IDistrictService _districtService;
     private readonly ITemperatureService _temperatureService;
@@ -13,21 +13,15 @@ public class DistrictTravelController : ControllerBase
         _temperatureService = temperatureService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetDistricts()
-    {
-        return Ok(await _districtService.GetDistrictsFromApi());
-    }
-
     [HttpGet("coolest")]
     public async Task<IActionResult> GetCoolestDistricts()
     {
-        return Ok(await _temperatureService.GetCoolestDistricts());
+        return GetResponse(await _temperatureService.GetCoolestDistricts());
     }
 
     [HttpGet("possibility/{currentId}/{destinationId}/{date}")]
     public async Task<IActionResult> GetTravelPossibility(string currentId, string destinationId, string date)
     {
-        return Ok(await _temperatureService.GetTravelPossibility(currentId, destinationId, date));
+        return GetResponse(await _temperatureService.GetTravelPossibility(currentId, destinationId, date));
     }
 }
