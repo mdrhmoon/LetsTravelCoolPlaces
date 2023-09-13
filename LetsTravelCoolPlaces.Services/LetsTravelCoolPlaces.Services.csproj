@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LetsTravelCoolPlaces.Core\LetsTravelCoolPlaces.Core.csproj" />
-    <ProjectReference Include="..\LetsTravelCoolPlaces.Utility\LetsTravelCoolPlaces.Utility.csproj" />
   </ItemGroup>
 
 </Project>

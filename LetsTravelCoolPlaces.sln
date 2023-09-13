@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34004.107
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LetsTravelCoolPlaces.Utility", "LetsTravelCoolPlaces.Utility\LetsTravelCoolPlaces.Utility.csproj", "{D33ED4C6-4B85-4B12-B615-5BB7651C65ED}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LetsTravelCoolPlaces.Services", "LetsTravelCoolPlaces.Services\LetsTravelCoolPlaces.Services.csproj", "{CB5734D4-84E2-45CD-A952-DC7ED7F972EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LetsTravelCoolPlaces.Tests", "LetsTravelCoolPlaces.Tests\LetsTravelCoolPlaces.Tests.csproj", "{ECFDFDDC-5EE2-4AD9-AF77-9C39DEE26B3C}"
@@ -19,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D33ED4C6-4B85-4B12-B615-5BB7651C65ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D33ED4C6-4B85-4B12-B615-5BB7651C65ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D33ED4C6-4B85-4B12-B615-5BB7651C65ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D33ED4C6-4B85-4B12-B615-5BB7651C65ED}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CB5734D4-84E2-45CD-A952-DC7ED7F972EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CB5734D4-84E2-45CD-A952-DC7ED7F972EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB5734D4-84E2-45CD-A952-DC7ED7F972EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
