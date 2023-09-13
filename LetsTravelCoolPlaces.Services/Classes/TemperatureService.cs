@@ -1,4 +1,4 @@
-﻿namespace LetsTravelCoolPlaces.Services;
+﻿namespace LetsTravelCoolPlaces.Services.Classes;
 
 public class TemperatureService : ITemperatureService
 {
@@ -21,11 +21,11 @@ public class TemperatureService : ITemperatureService
         // generating average temperature for all district
         var avgTemperatureOfDistricts = temperatureDistricts.GroupBy(x => new
         {
-            Latitude = x.Latitude,
+            x.Latitude,
             Longitutde = x.Longitude
         }).Select(g => new
         {
-            Latitude = g.Key.Latitude,
+            g.Key.Latitude,
             Longitude = g.Key.Longitutde,
             AvgTemperature = g.Average(x => x.Temperature)
         }).ToList();
@@ -62,7 +62,7 @@ public class TemperatureService : ITemperatureService
     private async Task<List<TemperatureDistrict>> GetTemperatureFromApi(string url, string latitude, string longitude)
     {
         var temperature = await _httpService.GetAsync(url);
-        return ConvertTemperatureToTemperatureDistrict(temperature, latitude, longitude);
+        return ConvertTemperatureToTemperatureDistrict(temperature!, latitude, longitude);
     }
 
     // Getting all district temperature
@@ -74,7 +74,7 @@ public class TemperatureService : ITemperatureService
         var districts = await _districtService.GetDistricts();
 
         // Generating all url and task for all district
-        foreach (var district in districts)
+        foreach (var district in districts!)
         {
             string url = Urls.GetTemperatureUrl(district.Lat, district.Long, startDate, endDate);
             allTasks.Add(GetTemperatureFromApi(url, district.Lat, district.Long));
@@ -95,7 +95,7 @@ public class TemperatureService : ITemperatureService
     private async Task<List<TemperatureDistrict>> GetTemperatureForAllDistrict()
     {
         List<TemperatureDistrict>? temperatureDistricts = await _distributedCache.GetAsync<List<TemperatureDistrict>>(Cachekeys.TEMPERATURE);
-        if(temperatureDistricts is null)
+        if (temperatureDistricts is null)
         {
             temperatureDistricts = await GetTemperatureForAllDistrictFromApi();
             if (temperatureDistricts is null) throw new Exception("No temperature found for districts.");
@@ -114,7 +114,7 @@ public class TemperatureService : ITemperatureService
     private List<TemperatureDistrict> ConvertTemperatureToTemperatureDistrict(Temperature temperature, string latitude, string longitude)
     {
         // taking indexes of all 2pm temperatures for all date.
-        var indexes = temperature.Hourly.Time.Select((x, i) => new {x, i}).Where(x => Convert.ToDateTime(x.x).Hour == 14).ToList();
+        var indexes = temperature.Hourly.Time.Select((x, i) => new { x, i }).Where(x => Convert.ToDateTime(x.x).Hour == 14).ToList();
         var temperatureDistricts = new List<TemperatureDistrict>();
 
         foreach (var index in indexes)

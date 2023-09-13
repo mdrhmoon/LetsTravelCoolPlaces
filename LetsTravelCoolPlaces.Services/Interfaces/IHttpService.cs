@@ -1,4 +1,4 @@
-﻿namespace LetsTravelCoolPlaces.Services;
+﻿namespace LetsTravelCoolPlaces.Services.Interfaces;
 
 public interface IHttpService<T> where T : class
 {

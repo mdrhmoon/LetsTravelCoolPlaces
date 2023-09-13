@@ -1,4 +1,4 @@
-﻿namespace LetsTravelCoolPlaces.Services;
+﻿namespace LetsTravelCoolPlaces.Services.Classes;
 
 public class DistrictService : IDistrictService
 {
@@ -14,8 +14,8 @@ public class DistrictService : IDistrictService
     public async Task<List<District>?> GetDistricts()
     {
         List<District>? districts = await _distributedCache.GetAsync<List<District>>(Cachekeys.DISTRICTS);
-        
-        if(districts == null)
+
+        if (districts == null)
         {
             districts = await GetDistrictsFromApi();
             if (districts is null) throw new Exception("No District Found.");
