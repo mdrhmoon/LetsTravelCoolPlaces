@@ -17,7 +17,7 @@ public class TemperatureServiceTests
     public async Task GetCoolestDistrict_ShouldHave_CoolestDistrictList()
     {
         // Arrange
-        var mockData = await new DistrictMock().GetDistrict();
+        var mockData = new DistrictMock().GetDistrict();
         districtService!.GetDistricts().Returns(mockData);
 
         // Act
@@ -35,9 +35,9 @@ public class TemperatureServiceTests
     public async Task GetTravelPossibility_ShouldHave_String(string CurrentDistrictId, string DestinationDistrictId, string Date, string Result)
     {
         // Arrange
-        var mockData = await new DistrictMock().GetDistrict();
+        var mockData = new DistrictMock().GetDistrict();
         districtService!.GetDistricts().Returns(mockData);
-        districtService.GetDistrictById(CurrentDistrictId).Returns(mockData.Where(x => x.Id == CurrentDistrictId).FirstOrDefault());
+        districtService.GetDistrictById(CurrentDistrictId).Returns(mockData!.Where(x => x.Id == CurrentDistrictId).FirstOrDefault());
 
         // Act
         var result = await sut!.GetTravelPossibility(CurrentDistrictId, DestinationDistrictId, Date);
@@ -52,9 +52,9 @@ public class TemperatureServiceTests
     public async Task GetTravelPossibility_ShouldHave_ExceptionMessage_InvalidDate(string CurrentDistrictId, string DestinationDistrictId, string Date)
     {
         // Arrange
-        var mockData = await new DistrictMock().GetDistrict();
+        var mockData = new DistrictMock().GetDistrict();
         districtService!.GetDistricts().Returns(mockData);
-        districtService.GetDistrictById(CurrentDistrictId).Returns(mockData.Where(x => x.Id == CurrentDistrictId).FirstOrDefault());
+        districtService.GetDistrictById(CurrentDistrictId).Returns(mockData!.Where(x => x.Id == CurrentDistrictId).FirstOrDefault());
 
         // Act
         try
