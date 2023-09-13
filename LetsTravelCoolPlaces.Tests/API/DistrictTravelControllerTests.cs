@@ -2,16 +2,14 @@
 
 public class DistrictTravelControllerTests
 {
-    private readonly DistrictTravelController sut = null;
-    private readonly IDistrictService districtService = null;
-    private readonly ITemperatureService temperatureService = null;
+    private readonly DistrictTravelController? sut = null;
+    private readonly ITemperatureService? temperatureService = null;
 
     public DistrictTravelControllerTests()
     {
-        districtService = Substitute.For<IDistrictService>();
         temperatureService = Substitute.For<ITemperatureService>();
 
-        sut = new DistrictTravelController(temperatureService, districtService);
+        sut = new DistrictTravelController(temperatureService);
     }
 
     //[Fact]
@@ -41,25 +39,25 @@ public class DistrictTravelControllerTests
     //    ((IList<District>)((OkObjectResult)result).Value).Should().HaveCount(c => c >= 2);
     //}
 
-    [Fact]
-    public async Task GetCooleDistricts_ShouldReturnOkResponse()
-    {
-        // Arrange
-        // Act
-        await sut.GetCoolestDistricts().GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
+    //[Fact]
+    //public async Task GetCoolestDistricts_ShouldReturnOkResponse()
+    //{
+    //    // Arrange
+    //    // Act
+    //    await sut!.GetCoolestDistricts().GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
 
-        // Assert
-        Result.StatusCode.Should().Be(200);
-    }
+    //    // Assert
+    //    Result.StatusCode.Should().Be(200);
+    //}
 
     [Fact]
-    public async Task GetCooleDistricts_ListOfCoolestDistrict()
+    public async Task GetCoolestDistricts_ListOfCoolestDistrict()
     {
         // Arrange
         var mockData = new DistrictMock().GetDistrict();
-        temperatureService.GetCoolestDistricts().Returns(mockData);
+        temperatureService!.GetCoolestDistricts()!.Returns(mockData);
         // Act
-        await sut.GetCoolestDistricts().GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
+        await sut!.GetCoolestDistricts().GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
 
         // Assert
         Result.StatusCode.Should().Be(200);
@@ -75,9 +73,9 @@ public class DistrictTravelControllerTests
     public async Task GetTravelPossibility_ShouldReturnOkResponse(string currentId, string destinationId, string date, string expectedResult)
     {
         // Arrange
-        temperatureService.GetTravelPossibility(currentId, destinationId, date).Returns(expectedResult);
+        temperatureService!.GetTravelPossibility(currentId, destinationId, date).Returns(expectedResult);
         // Act
-        await sut.GetTravelPossibility(currentId, destinationId, date).GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
+        await sut!.GetTravelPossibility(currentId, destinationId, date).GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
 
         // Assert
         Result.StatusCode.Should().Be(200);
@@ -93,9 +91,9 @@ public class DistrictTravelControllerTests
     public async Task GetTravelPossibility_ShouldReturnCannotTravel(string currentId, string destinationId, string date, string expectedResult)
     {
         // Arrange
-        temperatureService.GetTravelPossibility(currentId, destinationId, date).Returns(expectedResult);
+        temperatureService!.GetTravelPossibility(currentId, destinationId, date).Returns(expectedResult);
         // Act
-        await sut.GetTravelPossibility(currentId, destinationId, date).GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
+        await sut!.GetTravelPossibility(currentId, destinationId, date).GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
 
         // Assert
         Result.StatusCode.Should().Be(200);

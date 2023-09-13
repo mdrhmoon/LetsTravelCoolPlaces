@@ -15,10 +15,10 @@ public class DistrictService : IDistrictService
     {
         List<District>? districts = await _distributedCache.GetAsync<List<District>>(Cachekeys.DISTRICTS);
 
-        if (districts == null)
+        if (districts is null)
         {
             districts = await GetDistrictsFromApi();
-            if (districts is null) throw new Exception("No District Found.");
+            Throw.IfNull(districts, Messages.DistrictsNotFound());
             await _distributedCache.SetAsync(Cachekeys.DISTRICTS, districts);
         }
 

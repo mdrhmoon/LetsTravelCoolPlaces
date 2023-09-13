@@ -12,7 +12,8 @@ public class HttpService<T> : IHttpService<T> where T : class
             return JsonConvert.DeserializeObject<T>(result);
         }
 
-        throw new Exception($"Status Code: {(int)response.StatusCode} Message: {response.ReasonPhrase}");
+        Throw.Exception(Messages.APIFailedMessage(response.StatusCode, response.ReasonPhrase));
+        return null;
     }
 
     public async Task<T?> PostAsync(string url, T data)
@@ -24,7 +25,9 @@ public class HttpService<T> : IHttpService<T> where T : class
             var result = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(result);
         }
-        throw new Exception($"Status Code: {(int)response.StatusCode} Message: {response.ReasonPhrase}");
+
+        Throw.Exception(Messages.APIFailedMessage(response.StatusCode, response.ReasonPhrase));
+        return null;
     }
 
     private HttpClient GetClient(string url)

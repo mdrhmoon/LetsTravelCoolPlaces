@@ -4,12 +4,10 @@
 [ApiController]
 public class DistrictTravelController : BaseController
 {
-    private readonly IDistrictService _districtService;
     private readonly ITemperatureService _temperatureService;
 
-    public DistrictTravelController(ITemperatureService temperatureService, IDistrictService districtService)
+    public DistrictTravelController(ITemperatureService temperatureService)
     {
-        _districtService = districtService;
         _temperatureService = temperatureService;
     }
 

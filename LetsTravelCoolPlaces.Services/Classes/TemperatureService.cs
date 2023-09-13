@@ -13,13 +13,13 @@ public class TemperatureService : ITemperatureService
         _distributedCache = DistributedCache;
     }
 
-    public async Task<List<District>> GetCoolestDistricts()
+    public async Task<List<District>?> GetCoolestDistricts()
     {
         List<District>? coolestDistricts = await _distributedCache.GetAsync<List<District>>(Cachekeys.COOLESTDISTRICTS);
         if(coolestDistricts is null)
         {
             coolestDistricts = await GenerateCoolestDistricts();
-            if (coolestDistricts is null) throw new Exception("Failed to generate coolest districts.");
+            Throw.IfNull(coolestDistricts, Messages.FailedToGenerateCoolestDistricts());
             await _distributedCache.SetAsync(Cachekeys.COOLESTDISTRICTS, coolestDistricts);
         }
 
@@ -30,10 +30,10 @@ public class TemperatureService : ITemperatureService
     private async Task<List<District>> GenerateCoolestDistricts()
     {
         var temperatureDistricts = await GetTemperatureForAllDistrict();
-        if (temperatureDistricts is null) throw new Exception("Temperature for all district not found.");
+        Throw.IfNull(temperatureDistricts,  Messages.TemperatureNotFound());
 
         // Generating average temperature for all district
-        var avgTemperatureOfDistricts = temperatureDistricts.GroupBy(x => new
+        var avgTemperatureOfDistricts = temperatureDistricts!.GroupBy(x => new
         {
             x.Latitude,
             Longitutde = x.Longitude
@@ -45,7 +45,7 @@ public class TemperatureService : ITemperatureService
         }).ToList();
 
         var districts = await _districtService.GetDistricts();
-        if (districts is null) throw new Exception("Districts not found.");
+        Throw.IfNull(districts, Messages.DistrictsNotFound());
 
         // taking coolest 10 district
         var coolestDistrictsTemperature = avgTemperatureOfDistricts.OrderBy(x => x.AvgTemperature).Take(10).ToList();
@@ -62,26 +62,28 @@ public class TemperatureService : ITemperatureService
     public async Task<string> GetTravelPossibility(string currentDistrictId, string destinationDistrictId, string date)
     {
         DateTime startDate = DateTime.Now.AddDays(-1), endDate = DateTime.Now.AddDays(6), currentDate = Convert.ToDateTime(date);
-        if (currentDate <= startDate || currentDate > endDate) throw new Exception(ExceptionMessages.InvalidDateMessage(DateTime.Now, endDate));
+        if (currentDate <= startDate || currentDate > endDate) Throw.Exception(Messages.InvalidDateMessage(DateTime.Now, endDate));
 
         // Getting current location
         var currentDistrict = await _districtService.GetDistrictById(currentDistrictId);
-        if (currentDistrict is null) throw new Exception("Current Location not Found.");
+        Throw.IfNull(currentDistrict, Messages.CurrentLocationNotFound());
 
         // Getting destination location
         var coolestDistricts = await GetCoolestDistricts();
-        var destinationDistrict = coolestDistricts.Where(x => x.Id == destinationDistrictId).FirstOrDefault();
-        if (destinationDistrict is null) throw new Exception("Destination Location not Found.");
+        Throw.IfNull(coolestDistricts, Messages.CoolestDistrictsNotFound());
+
+        var destinationDistrict = coolestDistricts!.Where(x => x.Id == destinationDistrictId).FirstOrDefault();
+        Throw.IfNull(destinationDistrict, Messages.DestinationLocationNotFound());
 
         // Getting current district temperature for that day
         var currentDistrictTemperature = await GetTemperatureDistrictByLatitudeLongitudeAndDate(currentDistrict!.Lat, currentDistrict.Long, date);
-        if (currentDistrictTemperature is null) throw new Exception("Current location temperature not found.");
+        Throw.IfNull(currentDistrictTemperature, Messages.CurrentLocationTemperatureNotFound());
 
         // Getting destination location temperature for that day
         var destinationDistrictTemperature = await GetTemperatureDistrictByLatitudeLongitudeAndDate(destinationDistrict!.Lat, destinationDistrict.Long, date);
-        if (destinationDistrictTemperature is null) throw new Exception("Destination location temperature not found.");
+        Throw.IfNull(destinationDistrictTemperature, Messages.DestinationLocationTemperatureNotFound());
 
-        return currentDistrictTemperature!.Temperature > destinationDistrictTemperature!.Temperature ? "Can travel" : "Can't travel";
+        return Formula.GetTravelPossibility(currentDistrictTemperature!.Temperature, destinationDistrictTemperature!.Temperature);
     }
 
     // fetching temperature with district date between
@@ -95,8 +97,8 @@ public class TemperatureService : ITemperatureService
     private async Task<List<TemperatureDistrict>> GetTemperatureForAllDistrictFromApi()
     {
         var allTasks = new List<Task<List<TemperatureDistrict>>>();
-        string startDate = DateTime.Now.ToString("yyyy-MM-dd");
-        string endDate = DateTime.Now.AddDays(6).ToString("yyyy-MM-dd");
+        string startDate = DateTime.Now.ToString(Constants.DATE_FORMAT);
+        string endDate = DateTime.Now.AddDays(6).ToString(Constants.DATE_FORMAT);
         var districts = await _districtService.GetDistricts();
 
         // Generating all url and task for all district
@@ -124,7 +126,7 @@ public class TemperatureService : ITemperatureService
         if (temperatureDistricts is null)
         {
             temperatureDistricts = await GetTemperatureForAllDistrictFromApi();
-            if (temperatureDistricts is null) throw new Exception("No temperature found for districts.");
+            Throw.IfNull(temperatureDistricts, Messages.TemperatureNotFound());
             await _distributedCache.SetAsync(Cachekeys.TEMPERATURE, temperatureDistricts);
         }
 
@@ -134,7 +136,7 @@ public class TemperatureService : ITemperatureService
     private async Task<TemperatureDistrict?> GetTemperatureDistrictByLatitudeLongitudeAndDate(string latitude, string longitude, string date)
     {
         var temperatureDistricts = await GetTemperatureForAllDistrict();
-        return temperatureDistricts.Where(x => x.Latitude == latitude && x.Longitude == longitude && x.Day.ToString("yyyy-MM-dd") == date).FirstOrDefault();
+        return temperatureDistricts.Where(x => x.Latitude == latitude && x.Longitude == longitude && x.Day.ToString(Constants.DATE_FORMAT) == date).FirstOrDefault();
     }
 
     private List<TemperatureDistrict> ConvertTemperatureToTemperatureDistrict(Temperature temperature, string latitude, string longitude)
