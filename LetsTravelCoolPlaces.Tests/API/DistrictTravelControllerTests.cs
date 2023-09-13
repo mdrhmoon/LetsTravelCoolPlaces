@@ -46,10 +46,10 @@ public class DistrictTravelControllerTests
     {
         // Arrange
         // Act
-        var result = await sut.GetCoolestDistricts();
+        await sut.GetCoolestDistricts().GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
 
         // Assert
-        ((OkObjectResult)result).StatusCode.Should().Be(200);
+        Result.StatusCode.Should().Be(200);
     }
 
     [Fact]
@@ -59,12 +59,12 @@ public class DistrictTravelControllerTests
         var mockData = new DistrictMock().GetDistrict();
         temperatureService.GetCoolestDistricts().Returns(mockData);
         // Act
-        var result = await sut.GetCoolestDistricts();
+        await sut.GetCoolestDistricts().GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
 
         // Assert
-        ((OkObjectResult)result).StatusCode.Should().Be(200);
-        ((OkObjectResult)result).Value.Should().NotBeNull();
-        ((IList<District>)((OkObjectResult)result).Value).Should().HaveCount(c => c >= 2);
+        Result.StatusCode.Should().Be(200);
+        ResponseDto.Should().NotBeNull();
+        ((List<District>)ResponseDto.Data!).Should().HaveCount(c => c >= 2);
     }
 
     [Theory]
@@ -77,12 +77,12 @@ public class DistrictTravelControllerTests
         // Arrange
         temperatureService.GetTravelPossibility(currentId, destinationId, date).Returns(expectedResult);
         // Act
-        var result = await sut.GetTravelPossibility(currentId, destinationId, date);
+        await sut.GetTravelPossibility(currentId, destinationId, date).GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
 
         // Assert
-        ((OkObjectResult)result).StatusCode.Should().Be(200);
-        ((OkObjectResult)result).Value.Should().NotBeNull();
-        ((string)((OkObjectResult)result).Value).Should().Match(expectedResult);
+        Result.StatusCode.Should().Be(200);
+        ResponseDto.Data.Should().NotBeNull();
+        ((string)ResponseDto.Data!).Should().Match(expectedResult);
     }
 
     [Theory]
@@ -95,11 +95,11 @@ public class DistrictTravelControllerTests
         // Arrange
         temperatureService.GetTravelPossibility(currentId, destinationId, date).Returns(expectedResult);
         // Act
-        var result = await sut.GetTravelPossibility(currentId, destinationId, date);
+        await sut.GetTravelPossibility(currentId, destinationId, date).GetResult(out ResponseDto ResponseDto, out OkObjectResult Result);
 
         // Assert
-        ((OkObjectResult)result).StatusCode.Should().Be(200);
-        ((OkObjectResult)result).Value.Should().NotBeNull();
-        ((string)((OkObjectResult)result).Value).Should().Match(expectedResult);
+        Result.StatusCode.Should().Be(200);
+        ResponseDto.Data.Should().NotBeNull();
+        ((string)ResponseDto.Data!).Should().Match(expectedResult);
     }
 }
