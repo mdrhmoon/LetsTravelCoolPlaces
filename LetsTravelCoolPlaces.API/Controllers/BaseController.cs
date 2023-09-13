@@ -14,7 +14,7 @@ public class BaseController : ControllerBase
     private string GetDetailMessage(Exception error)
     {
         var errorDetails = new StringBuilder();
-        errorDetails.Append($"Error: {error.Message} ");
+        errorDetails.Append($"Error: {error.Message}");
 
         if(error.InnerException is not null) errorDetails.Append($" ErrorInDetails: {error.InnerException.Message}");
 
