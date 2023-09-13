@@ -10,6 +10,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IDistrictService, DistrictService>();
 builder.Services.AddTransient<ITemperatureService, TemperatureService>();
 
+// SERILOG
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

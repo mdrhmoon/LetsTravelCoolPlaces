@@ -16,12 +16,26 @@ public class DistrictTravelController : BaseController
     [HttpGet("coolest")]
     public async Task<IActionResult> GetCoolestDistricts()
     {
-        return GetResponse(await _temperatureService.GetCoolestDistricts());
+        try
+        {
+            return GetResponse(await _temperatureService.GetCoolestDistricts());
+        }
+        catch (Exception ex)
+        {
+            return GetResponse(ex);
+        }
     }
 
     [HttpGet("possibility/{currentId}/{destinationId}/{date}")]
     public async Task<IActionResult> GetTravelPossibility(string currentId, string destinationId, string date)
     {
-        return GetResponse(await _temperatureService.GetTravelPossibility(currentId, destinationId, date));
+        try
+        {
+            return GetResponse(await _temperatureService.GetTravelPossibility(currentId, destinationId, date));
+        }
+        catch (Exception ex)
+        {
+            return GetResponse(ex);
+        }
     }
 }

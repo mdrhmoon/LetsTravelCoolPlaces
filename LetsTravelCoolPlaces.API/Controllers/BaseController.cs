@@ -7,9 +7,9 @@ public class BaseController : ControllerBase
         
     }
 
-    public IActionResult GetResponse(object? data) => Ok(new ResponseDto { Data = data });
+    protected IActionResult GetResponse(object? data) => Ok(new ResponseDto { Data = data });
 
-    public IActionResult GetResponse(Exception error) => BadRequest(new ResponseDto { Status = "ERROR", Message = GetDetailMessage(error) });
+    protected IActionResult GetResponse(Exception error) => BadRequest(new ResponseDto { Status = "ERROR", Message = GetDetailMessage(error) });
 
     private string GetDetailMessage(Exception error)
     {
@@ -18,6 +18,7 @@ public class BaseController : ControllerBase
 
         if(error.InnerException is not null) errorDetails.Append($" ErrorInDetails: {error.InnerException.Message}");
 
+        Log.Error(errorDetails.ToString());
         return errorDetails.ToString();
     }
 }
