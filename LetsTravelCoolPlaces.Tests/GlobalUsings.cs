@@ -4,6 +4,7 @@ global using LetsTravelCoolPlaces.Core.Dtos;
 global using LetsTravelCoolPlaces.Core.Models;
 global using LetsTravelCoolPlaces.Services.Classes;
 global using LetsTravelCoolPlaces.Services.Interfaces;
+global using LetsTravelCoolPlaces.Services.Utility;
 global using LetsTravelCoolPlaces.Tests.MockData;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.Extensions.Caching.Distributed;

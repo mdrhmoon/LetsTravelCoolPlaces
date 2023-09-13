@@ -5,7 +5,7 @@ public static class CacheService
     public static async Task<T?> GetAsync<T>(this IDistributedCache distributedCache, string cacheKey, CancellationToken token = default)
     {
         byte[]? utf8Bytes = await distributedCache.GetAsync(cacheKey, token).ConfigureAwait(continueOnCapturedContext: false);
-        if (utf8Bytes != null)
+        if (utf8Bytes != null && utf8Bytes!.Length != 0)
         {
             return System.Text.Json.JsonSerializer.Deserialize<T>(utf8Bytes);
         }
