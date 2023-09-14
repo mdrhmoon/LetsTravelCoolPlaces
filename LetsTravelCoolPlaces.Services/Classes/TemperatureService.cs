@@ -27,22 +27,21 @@ public class TemperatureService : ITemperatureService
     }
 
     // getting coolest 10 districts
-    private async Task<List<District>> GenerateCoolestDistricts()
+    private async Task<List<District>?> GenerateCoolestDistricts()
     {
         var temperatureDistricts = await GetTemperatureForAllDistrict();
         Throw.IfNull(temperatureDistricts,  Messages.TemperatureNotFound());
 
         // Generating average temperature for all district
-        var avgTemperatureOfDistricts = temperatureDistricts!.GroupBy(x => new
-        {
-            x.Latitude,
-            Longitutde = x.Longitude
-        }).Select(g => new
-        {
-            g.Key.Latitude,
-            Longitude = g.Key.Longitutde,
-            AvgTemperature = g.Average(x => x.Temperature)
-        }).ToList();
+        var avgTemperatureOfDistricts = temperatureDistricts!.GroupBy(x => new {
+                x.Latitude,
+                x.Longitude
+            }).Select(g => new
+            {
+                g.Key.Latitude,
+                g.Key.Longitude,
+                AvgTemperature = g.Average(x => x.Temperature)
+            }).ToList();
 
         var districts = await _districtService.GetDistricts();
         Throw.IfNull(districts, Messages.DistrictsNotFound());
@@ -51,7 +50,7 @@ public class TemperatureService : ITemperatureService
         var coolestDistrictsTemperature = avgTemperatureOfDistricts.OrderBy(x => x.AvgTemperature).Take(10).ToList();
 
         // filtering coolest district from all district
-        var coolestDistrict = districts!.Where(x =>
+        List<District>? coolestDistrict = districts!.Where(x =>
             coolestDistrictsTemperature.Select(y => y.Latitude).Contains(x.Lat) &&
                 coolestDistrictsTemperature.Select(z => z.Longitude).Contains(x.Long)).ToList();
 
@@ -99,7 +98,7 @@ public class TemperatureService : ITemperatureService
         var allTasks = new List<Task<List<TemperatureDistrict>>>();
         string startDate = DateTime.Now.ToString(Constants.DATE_FORMAT);
         string endDate = DateTime.Now.AddDays(6).ToString(Constants.DATE_FORMAT);
-        var districts = await _districtService.GetDistricts();
+        List<District>? districts = await _districtService.GetDistricts();
 
         // Generating all url and task for all district
         foreach (var district in districts!)
@@ -110,14 +109,7 @@ public class TemperatureService : ITemperatureService
 
         var allDistrictsTemperatureArray = await Task.WhenAll(allTasks);
 
-        // Converting List<TemperatureDistrict> array to List<TemperatureDistrict>
-        var allDistrictsTemperature = new List<TemperatureDistrict>();
-        foreach (var temperature in allDistrictsTemperatureArray)
-        {
-            allDistrictsTemperature.AddRange(temperature);
-        }
-
-        return allDistrictsTemperature;
+        return allDistrictsTemperatureArray.SelectMany(x => x).ToList();
     }
 
     private async Task<List<TemperatureDistrict>> GetTemperatureForAllDistrict()
@@ -142,21 +134,14 @@ public class TemperatureService : ITemperatureService
     private List<TemperatureDistrict> ConvertTemperatureToTemperatureDistrict(Temperature temperature, string latitude, string longitude)
     {
         // taking indexes of all 2pm temperatures for all date.
-        var indexes = temperature.Hourly.Time.Select((x, i) => new { x, i }).Where(x => Convert.ToDateTime(x.x).Hour == 14).ToList();
-        var temperatureDistricts = new List<TemperatureDistrict>();
+        var hourIndexes = temperature.Hourly.Time.Select((x, i) => new { x, i }).Where(x => Convert.ToDateTime(x.x).Hour == 14).ToList();
 
-        foreach (var index in indexes)
-        {
-            var district = new TemperatureDistrict
-            {
+        List<TemperatureDistrict> temperatureDistricts = hourIndexes.Select(x => new TemperatureDistrict {
                 Latitude = latitude,
                 Longitude = longitude,
-                Day = Convert.ToDateTime(temperature.Hourly.Time[index.i]),
-                Temperature = temperature.Hourly.Temperature_2m[index.i]
-            };
-
-            temperatureDistricts.Add(district);
-        }
+                Day = Convert.ToDateTime(temperature.Hourly.Time[x.i]),
+                Temperature = temperature.Hourly.Temperature_2m[x.i]
+            }).ToList();
 
         return temperatureDistricts;
     }
