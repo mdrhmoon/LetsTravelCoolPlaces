@@ -21,6 +21,7 @@
     <li><a href="#project-architecture">Project Architecture</a></li>
     <li><a href="#api-documentation">API Documentation</a></li>
     <li><a href="#unit-test">Unit Test</a></li>
+    <li><a href="#logging-monitoring">Logging And Monitoring</a></li>
     <li><a href="#future-improvements">Future Improvements</a></li>
   </ol>
 </details>
@@ -202,6 +203,9 @@
 ## Unit Test
   Unit tests are written to test every method so that those methods can satisfy the user's requirements. We have used XUnit for Unit Testing. XUnit is more suitable for .Net Core applications. LetsTravelCoolPlaces.Tests 
   project is the unit testing project.
+
+## Logging And Monitoring
+  Exception logging: We have used Serilog for global exception logging. The log files can be seen in the project LetsTravelCoolPlaces.API folder Log. We can implement exception monitoring from the Serilog log files.
   
 ## Future Improvements
  - We can add another layer (LetsTravelCoolPlaces.Data) where all the data-fetching logic 
