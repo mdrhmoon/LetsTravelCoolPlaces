@@ -25,10 +25,10 @@ public class DistrictServiceTests
     }
 
     [Theory]
-    [InlineData("1")]
-    [InlineData("2")]
-    [InlineData("3")]
-    [InlineData("4")]
+    [InlineData("19")]
+    [InlineData("20")]
+    [InlineData("26")]
+    [InlineData("27")]
     public async Task GetDistrictsById_ShouldHave_District(string DistrictId)
     {
         // Act

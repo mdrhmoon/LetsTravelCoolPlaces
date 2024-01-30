@@ -29,9 +29,10 @@ public class TemperatureServiceTests
     }
 
     [Theory]
-    [InlineData("1", "2", "2023-09-17", "Can travel")]
-    [InlineData("2", "1", "2023-09-18", "Can't travel")]
-    [InlineData("1", "2", "2023-09-19", "Can travel")]
+    [InlineData("19", "20", "2024-02-02", "Can travel")]
+    [InlineData("20", "19", "2024-02-04", "Can't travel")]
+    [InlineData("26", "27", "2024-02-03", "Can travel")]
+    [InlineData("28", "19", "2024-02-01", "Can't travel")]
     public async Task GetTravelPossibility_ShouldHave_String(string CurrentDistrictId, string DestinationDistrictId, string Date, string Result)
     {
         // Arrange
@@ -48,7 +49,7 @@ public class TemperatureServiceTests
     }
 
     [Theory]
-    [InlineData("1", "2", "2023-09-28")]
+    [InlineData("19", "20", "2023-02-02")]
     public async Task GetTravelPossibility_ShouldHave_ExceptionMessage_InvalidDate(string CurrentDistrictId, string DestinationDistrictId, string Date)
     {
         // Arrange

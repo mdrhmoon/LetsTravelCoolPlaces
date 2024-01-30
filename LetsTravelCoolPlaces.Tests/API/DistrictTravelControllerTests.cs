@@ -66,10 +66,8 @@ public class DistrictTravelControllerTests
     }
 
     [Theory]
-    [InlineData("1", "7", "2023-09-14", "Can Travel")]
-    [InlineData("7", "1", "2023-09-15", "Can Travel")]
-    [InlineData("7", "3", "2023-09-16", "Can Travel")]
-    [InlineData("7", "3", "2023-09-21", "Can't Travel")]
+    [InlineData("19", "20", "2024-02-02", "Can travel")]
+    [InlineData("26", "27", "2024-02-03", "Can travel")]
     public async Task GetTravelPossibility_ShouldReturnOkResponse(string currentId, string destinationId, string date, string expectedResult)
     {
         // Arrange
@@ -80,14 +78,12 @@ public class DistrictTravelControllerTests
         // Assert
         Result.StatusCode.Should().Be(200);
         ResponseDto.Data.Should().NotBeNull();
-        ((string)ResponseDto.Data!).Should().Match(expectedResult);
+        ((string)ResponseDto.Data!).Should().Be(expectedResult);
     }
 
     [Theory]
-    [InlineData("1", "7", "2023-09-14", "Can Travel")]
-    [InlineData("7", "1", "2023-09-15", "Can Travel")]
-    [InlineData("7", "3", "2023-09-16", "Can Travel")]
-    [InlineData("7", "3", "2023-09-21", "Can't Travel")]
+    [InlineData("20", "19", "2024-02-04", "Can't travel")]
+    [InlineData("28", "19", "2024-02-01", "Can't travel")]
     public async Task GetTravelPossibility_ShouldReturnCannotTravel(string currentId, string destinationId, string date, string expectedResult)
     {
         // Arrange
@@ -98,6 +94,6 @@ public class DistrictTravelControllerTests
         // Assert
         Result.StatusCode.Should().Be(200);
         ResponseDto.Data.Should().NotBeNull();
-        ((string)ResponseDto.Data!).Should().Match(expectedResult);
+        ((string)ResponseDto.Data!).Should().Be(expectedResult);
     }
 }

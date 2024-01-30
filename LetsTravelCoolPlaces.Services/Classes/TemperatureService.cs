@@ -16,7 +16,7 @@ public class TemperatureService : ITemperatureService
     public async Task<List<District>?> GetCoolestDistricts()
     {
         List<District>? coolestDistricts = await _distributedCache.GetAsync<List<District>>(Cachekeys.COOLESTDISTRICTS);
-        if(coolestDistricts is null)
+        if (coolestDistricts is null)
         {
             coolestDistricts = await GenerateCoolestDistricts();
             Throw.IfNull(coolestDistricts, Messages.FailedToGenerateCoolestDistricts());
@@ -30,29 +30,40 @@ public class TemperatureService : ITemperatureService
     private async Task<List<District>?> GenerateCoolestDistricts()
     {
         var temperatureDistricts = await GetTemperatureForAllDistrict();
-        Throw.IfNull(temperatureDistricts,  Messages.TemperatureNotFound());
+        Throw.IfNull(temperatureDistricts, Messages.TemperatureNotFound());
 
         // Generating average temperature for all district
-        var avgTemperatureOfDistricts = temperatureDistricts!.GroupBy(x => new {
-                x.Latitude,
-                x.Longitude
-            }).Select(g => new
-            {
-                g.Key.Latitude,
-                g.Key.Longitude,
-                AvgTemperature = g.Average(x => x.Temperature)
-            }).ToList();
+        var avgTemperatureOfDistricts = temperatureDistricts!.GroupBy(x => new
+        {
+            x.Latitude,
+            x.Longitude
+        }).Select(g => new
+        {
+            g.Key.Latitude,
+            g.Key.Longitude,
+            AvgTemperature = g.Average(x => x.Temperature)
+        }).ToList();
 
         var districts = await _districtService.GetDistricts();
         Throw.IfNull(districts, Messages.DistrictsNotFound());
 
         // taking coolest 10 district
-        var coolestDistrictsTemperature = avgTemperatureOfDistricts.OrderBy(x => x.AvgTemperature).Take(10).ToList();
+        var coolestDistrictsTemperature = avgTemperatureOfDistricts
+            .OrderBy(x => x.AvgTemperature)
+            .Take(10)
+            .ToList();
 
         // filtering coolest district from all district
-        List<District>? coolestDistrict = districts!.Where(x =>
-            coolestDistrictsTemperature.Select(y => y.Latitude).Contains(x.Lat) &&
-                coolestDistrictsTemperature.Select(z => z.Longitude).Contains(x.Long)).ToList();
+        List<District>? coolestDistrict = districts!
+            .Where(x =>
+                coolestDistrictsTemperature
+                    .Select(y => y.Latitude)
+                    .Contains(x.Lat)
+                &&
+                coolestDistrictsTemperature
+                    .Select(z => z.Longitude)
+                    .Contains(x.Long))
+            .ToList();
 
         return coolestDistrict;
     }
@@ -60,8 +71,12 @@ public class TemperatureService : ITemperatureService
     // Checking travel possibility of destination district
     public async Task<string> GetTravelPossibility(string currentDistrictId, string destinationDistrictId, string date)
     {
-        DateTime startDate = DateTime.Now.AddDays(-1), endDate = DateTime.Now.AddDays(6), currentDate = Convert.ToDateTime(date);
-        if (currentDate <= startDate || currentDate > endDate) Throw.Exception(Messages.InvalidDateMessage(DateTime.Now, endDate));
+        DateTime startDate = DateTime.Now.AddDays(-1);
+        DateTime endDate = DateTime.Now.AddDays(6);
+        DateTime currentDate = Convert.ToDateTime(date);
+
+        if (IsValidDate(startDate, endDate, currentDate))
+            Throw.Exception(Messages.InvalidDateMessage(DateTime.Now, endDate));
 
         // Getting current location
         var currentDistrict = await _districtService.GetDistrictById(currentDistrictId);
@@ -84,6 +99,8 @@ public class TemperatureService : ITemperatureService
 
         return Formula.GetTravelPossibility(currentDistrictTemperature!.Temperature, destinationDistrictTemperature!.Temperature);
     }
+
+    private bool IsValidDate(DateTime startDate, DateTime endDate, DateTime currentDate) => currentDate <= startDate || currentDate > endDate;
 
     // fetching temperature with district date between
     private async Task<List<TemperatureDistrict>> GetTemperatureFromApi(string url, string latitude, string longitude)
@@ -128,20 +145,26 @@ public class TemperatureService : ITemperatureService
     private async Task<TemperatureDistrict?> GetTemperatureDistrictByLatitudeLongitudeAndDate(string latitude, string longitude, string date)
     {
         var temperatureDistricts = await GetTemperatureForAllDistrict();
-        return temperatureDistricts.Where(x => x.Latitude == latitude && x.Longitude == longitude && x.Day.ToString(Constants.DATE_FORMAT) == date).FirstOrDefault();
+        return temperatureDistricts
+                    .Where(x => x.Latitude == latitude && x.Longitude == longitude && x.Day.ToString(Constants.DATE_FORMAT) == date)
+                    .FirstOrDefault();
     }
 
     private List<TemperatureDistrict> ConvertTemperatureToTemperatureDistrict(Temperature temperature, string latitude, string longitude)
     {
         // taking indexes of all 2pm temperatures for all date.
-        var hourIndexes = temperature.Hourly.Time.Select((x, i) => new { x, i }).Where(x => Convert.ToDateTime(x.x).Hour == 14).ToList();
+        var hourIndexes = temperature.Hourly.Time
+            .Select((x, i) => new { x, i })
+            .Where(x => Convert.ToDateTime(x.x).Hour == 14)
+            .ToList();
 
-        List<TemperatureDistrict> temperatureDistricts = hourIndexes.Select(x => new TemperatureDistrict {
-                Latitude = latitude,
-                Longitude = longitude,
-                Day = Convert.ToDateTime(temperature.Hourly.Time[x.i]),
-                Temperature = temperature.Hourly.Temperature_2m[x.i]
-            }).ToList();
+        List<TemperatureDistrict> temperatureDistricts = hourIndexes.Select(x => new TemperatureDistrict
+        {
+            Latitude = latitude,
+            Longitude = longitude,
+            Day = Convert.ToDateTime(temperature.Hourly.Time[x.i]),
+            Temperature = temperature.Hourly.Temperature_2m[x.i]
+        }).ToList();
 
         return temperatureDistricts;
     }

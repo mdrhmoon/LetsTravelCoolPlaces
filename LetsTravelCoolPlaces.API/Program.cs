@@ -1,3 +1,5 @@
+using LetsTravelCoolPlaces.API.Middlewares;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,8 +10,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDistributedMemoryCache();
 
-builder.Services.AddTransient<IDistrictService, DistrictService>();
-builder.Services.AddTransient<ITemperatureService, TemperatureService>();
+builder.Services.AddSingleton<GlobalExceptionsHandler>();
+builder.Services.AddScoped<IDistrictService, DistrictService>();
+builder.Services.AddScoped<ITemperatureService, TemperatureService>();
 // SERILOG
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -25,7 +28,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseMiddleware<GlobalExceptionsHandler>();
 app.UseAuthorization();
 
 app.MapControllers();
